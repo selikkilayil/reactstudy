@@ -105,7 +105,7 @@ function AddUser() {
 
       values.first = "";
       values.last = "";
-      values.dob = 0;
+      values.born = 0;
     },
   });
 
