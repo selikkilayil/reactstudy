@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import CounterHooks from "./components/counterHooks";
 import {
@@ -30,6 +36,17 @@ function ListData() {
     getDocs(collection(db, "users"))
   );
 
+  const mutationDlt = useMutation(deleteDoc, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries(["userData"]);
+    },
+  });
+
+  function deleteHandler(id) {
+    mutationDlt.mutate(doc(db, "users", id));
+  }
+
   if (isLoading)
     return (
       <Box sx={{ display: "flex" }}>
@@ -54,7 +71,12 @@ function ListData() {
   console.log(val);
 
   const listItems = data.docs.map((user) => {
-    return <li key={user.id}>{user.data().first}</li>;
+    return (
+      <li key={user.id}>
+        {user.data().first} {user.data().last}
+        <button onClick={() => deleteHandler(user.id)}>Delete</button>
+      </li>
+    );
   });
   return <ul>{listItems}</ul>;
 }
@@ -80,6 +102,10 @@ function AddUser() {
         lastName: values.last,
         dob: values.born,
       });
+
+      values.first = "";
+      values.last = "";
+      values.dob = 0;
     },
   });
 
